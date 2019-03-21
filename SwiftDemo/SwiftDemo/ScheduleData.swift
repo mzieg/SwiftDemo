@@ -3,7 +3,7 @@ import Foundation
 class ScheduleData
 {
     let filename = "scheduleData.csv"
-    var sections: [String:CourseSection]
+    var sections: [String:CourseSection] // sectionID -> CourseSection
     
     init()
     {
@@ -101,21 +101,6 @@ class ScheduleData
         return nil
     }
     
-    func deleteFile()
-    {
-        if let url = getPathname()
-        {
-            do
-            {
-                try FileManager.default.removeItem(at: url)
-            }
-            catch let error as NSError
-            {
-                print("Can't delete \(url): \(error.domain)")
-            }
-        }
-    }
-    
     /// Swift seems to have amazingly poor support for simply writing text files
     /// line-by-line; it really prefers to deal with large atomic writes.
     func generateFileContents() -> String
@@ -131,14 +116,14 @@ class ScheduleData
     /// Completely overwrites the target file each time (doesn't append / update existing contents)
     func saveFile()
     {
-        // delete existing first (TODO: rename to .bak)
-        deleteFile()
-       
+        // get the name of the file we're going to write
         if let url = getPathname()
         {
+            // generate the complete contents of the file we're going to write
             let text = generateFileContents()
             do
             {
+                // write the entire file in one command
                 try text.write(to: url, atomically: false, encoding: String.Encoding.utf8)
             }
             catch
@@ -157,16 +142,24 @@ class ScheduleData
         // clear the internal list
         sections = [:]
         
+        // get the pathname of the file we're going to load
         if let url = getPathname()
         {
             do
             {
+                // load the entire file in one command, because Swift is stupid
                 let text = try String(contentsOf: url)
+                
+                // split the giant string we just read into an array of lines by delimiting at newline characters
                 let lines = text.components(separatedBy: .newlines)
+                
+                // iterate over each line we read
                 for line in lines
                 {
+                    // skip the header row
                     if !line.starts(with: "Year,")
                     {
+                        // this wasn't the header row, so convert the line into a new CourseSection
                         loadSectionFromLine(line)
                     }
                 }
@@ -184,7 +177,10 @@ class ScheduleData
     
     func loadSectionFromLine(_ line: String)
     {
+        // convert line into an array of strings by splitting on comma
         let tokens = line.components(separatedBy: ",")
+        
+        // check we found the expected number of fields
         if tokens.count != 10
         {
             print("ERROR: can't parse line \(tokens)")
@@ -209,6 +205,7 @@ class ScheduleData
             return
         }
         
+        // instantiate a new CourseSection from the fields we parsed
         let section = CourseSection(name: courseName, dept: dept, num: courseNum!, section: sectionNum!, instructor: instructor, building: building, room: room!, timeSlot: timeSlot, term: term, year: year!)
         var error = section.findErrors()
         if error != nil
@@ -217,6 +214,9 @@ class ScheduleData
             return
         }
         
+        // note that this will re-apply logic rules when loading files from disk;
+        // you can't use Excel to generate conflicting sections and then sneak
+        // them into the database that way
         error = canAdd(section, oldSectionID: nil)
         if error != nil
         {

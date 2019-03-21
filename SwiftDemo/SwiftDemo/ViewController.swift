@@ -46,7 +46,7 @@ class ViewController: NSViewController, NSTableViewDataSource, NSTableViewDelega
     // validation passed, so decide what data we're going to send to
     // DetailViewController.
     override func prepare(for segue: NSStoryboardSegue, sender: Any?) {
-        var sectionID : String? = nil
+        var sectionID : String?
         var readOnly: Bool = false
         let selectedSection = getSelectedSection()
 
@@ -60,13 +60,13 @@ class ViewController: NSViewController, NSTableViewDataSource, NSTableViewDelega
             else if button.title.lowercased() == "edit"
             {
                 print("prepare: from Edit")
-                sectionID = selectedSection?.sectionID ?? nil
+                sectionID = selectedSection?.sectionID
             }
             else if button.title.lowercased() == "view"
             {
                 print("prepare: from View")
                 readOnly = true
-                sectionID = selectedSection?.sectionID ?? nil
+                sectionID = selectedSection?.sectionID
             }
             else
             {

@@ -13,7 +13,7 @@ class CourseSection
     var term: String        // e.g. "Fall", "Spring" etc
     var year: Int           // e.g. 2019
     
-    var sectionID: String   // e.g. "2019-Spring-CS-420-001" (year + term + dept + num + section)
+    var sectionID: String   // e.g. "2019-Spring-CS-420-001" (year + term + dept + num + section) [Primary Key]
     
     init(name:String, dept: String, num: Int, section: Int, instructor: String, building: String, room: Int, timeSlot: String, term: String, year: Int)
     {
